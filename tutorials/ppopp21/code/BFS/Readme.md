@@ -24,5 +24,5 @@ You may adjust the hyperparameters of the locality aware scheduler using the env
 For a full list of options, run `./bfs -h`. Beware that the larger graphs (`-s 3` and `-s 4` and well as the more saerches `-r 4` take lots of time on CPU or with a non locality-aware scheduler.)
 
 ## Attribution and Thanks
-The BFS benchmark as well as other supporting files comes from the [SHOC benchmark suite] (https://github.com/vetter/shoc). The files are moved here for convenience during the tutorial.  The paper describing the SHOC benchmark suite is below:
+The BFS benchmark as well as other supporting files comes from the [SHOC benchmark suite](https://github.com/vetter/shoc). The files are moved here for convenience during the tutorial.  The paper describing the SHOC benchmark suite is below:
 Anthony Danalis, Gabriel Marin, Collin McCurdy, Jeremy S. Meredith, Philip C. Roth, Kyle Spafford, Vinod Tipparaju, and Jeffrey S. Vetter. 2010. The Scalable Heterogeneous Computing (SHOC) benchmark suite. In Proceedings of the 3rd Workshop on General-Purpose Computation on Graphics Processing Units (GPGPU-3). Association for Computing Machinery, New York, NY, USA, 63–74. DOI:https://doi.org/10.1145/1735688.1735702 
