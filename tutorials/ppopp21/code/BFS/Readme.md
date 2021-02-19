@@ -1,7 +1,7 @@
 # BFS Tutorial
 
 ## Welcome
-This section of the tutorial is intended to experiment with a more complex benchmark. There are 2 applications in this folder: BFS, and BFS_modified. If you are following along in the tutorial, we began by running BFS, then make the modifications necessary to use resident memory for breadth first search. To build the modified version, uncomment that section from the CMakeLists.txt file. This section of the tutorial was focused on multiple GPUs. If you don't have access to multiple GPUs, you may run these benchmarks on your CPU or single GPU, just specify a smaller size using the -s, -r and -n options. For a full description of the op
+This section of the tutorial is intended to experiment with a more complex benchmark. There are 2 applications in this folder: BFS, and BFS_modified. If you are following along in the tutorial, we began by running BFS, then make the modifications necessary to use resident memory for breadth first search. To build the modified version, uncomment that section from the CMakeLists.txt file. This section of the tutorial was focused on multiple GPUs. If you do not have access to multiple GPUs, you may run the commands, but beware of bigger sizes.
 
 ## Building the Code
 First intall MCL following the instructions here: #TODO: Include link to public MCL
