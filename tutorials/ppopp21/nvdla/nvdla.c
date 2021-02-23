@@ -79,11 +79,11 @@ int main(int argc, char** argv)
 
 	char* 				dla_bin = "mnist/mnist.nvdla";
 	char*				image_dir = "mnist/";	
-
+	
 
 	hdls     = (mcl_handle**) malloc(num_digits * sizeof(mcl_handle*));
-	in       = (float**) malloc(num_digits * sizeof(float*));
-	out      = (float**) malloc(num_digits * sizeof(float*));
+	in       = (float**) malloc(10 * sizeof(float*));
+	out      = (float**) malloc(10 * sizeof(float*));
 	
 	if(!in || !out ){
 		printf("Error allocating memory. Aborting.\n");
@@ -91,8 +91,11 @@ int main(int argc, char** argv)
 	}
 	
 	mcl_init(workers,0x0);
+	int ndevs = mcl_get_ndev();
 
-	for(i=0;i<num_digits;i++){
+        printf("Current systems has total of %u devices.\n", ndevs);
+
+	for(i=0;i<10;i++){
 		in[i] = (float*) malloc(sizeof(float)*IMGSIZE);
 		out[i] = (float*) malloc(sizeof(float)* 10);
 		if(!in[i] || !out[i] ){
@@ -127,8 +130,9 @@ int main(int argc, char** argv)
 			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", h_idx);
 			continue;
 		}
-
-		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[i], sizeof(float)*IMGSIZE,
+		int digit = rand()%10;
+		printf("infering %d\n",digit);
+		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
 					MCL_ARG_INPUT | MCL_ARG_BUFFER)){
 			printf("Error setting argument for task %"PRIu64".\n",h_idx);
 			continue;
@@ -154,18 +158,17 @@ int main(int argc, char** argv)
 	}
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	for (i=0;i<num_digits;++i){
-		printf("Predictions (prob > 0.001) for %lu\n",i);
+		printf("Prediction for request %lu\n",i);
 		uint64_t j =0;
 		for(j=0;j<10;j++){
 			if (out[i][j] > 0.001){
-				printf("%ld %f\n",j,out[i][j]);
+				printf("%ld\n",j);
 			}
 			out[i][j] =0; //reset for async test
 		}
 		printf("--------------------------------------\n");
 	}
 	for(i=0; i<num_digits; i++){
-		printf("i: %"PRIx64" %p\n",i,hdls[i]);
 		if(hdls[i]->status != MCL_REQ_COMPLETED ){
 			printf("Request %"PRIu64" status=%"PRIx64" return=%x"PRIx64"\n",
 			       i,  hdls[i]->status, hdls[i]->ret);
@@ -203,8 +206,9 @@ int main(int argc, char** argv)
 			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", h_idx);
 			continue;
 		}
-
-		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[i], sizeof(float)*IMGSIZE,
+		int digit = rand()%10;
+                printf("infering %d\n",digit);
+		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
 					MCL_ARG_INPUT | MCL_ARG_BUFFER)){
 			printf("Error setting argument for task %"PRIu64".\n",h_idx);
 			continue;
@@ -234,11 +238,11 @@ int main(int argc, char** argv)
 	
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	for (i=0;i<num_digits;++i){
-		printf("Predictions (prob > 0.001) for %lu\n",i);
+		printf("Prediction for request %lu\n",i);
 		uint64_t j =0;
 		for(j=0;j<10;j++){
 			if (out[i][j] > 0.001){
-				printf("%ld %f\n",j,out[i][j]);
+				printf("%ld\n",j);
 			}
 			out[i][j] =0; //reset for async test
 		}
@@ -262,6 +266,8 @@ int main(int argc, char** argv)
 		
 	for(i=0; i<num_digits; i++){
 		mcl_hdl_free(hdls[i]);
+	}
+	for(i=0; i<10;i++){
 		free(in[i]);
 		free(out[i]);
 	}

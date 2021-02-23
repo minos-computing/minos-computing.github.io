@@ -1,4 +1,4 @@
-LIBS=-lmcl -lOpenCL -lm -lpthread -lrt
+LIBS=-lmcl -lOpenCL -lm -lpthread -lrt 
 ifeq ($(CC),)
     CC := gcc
 endif
@@ -14,6 +14,7 @@ ifeq ($(prototxt),)
 	prototxt=mnist/mnist.prototxt
 endif
 
+all: nvdla_test nvdla_emu_bin
 
 nvdla_emu_bin:
 	@[ ! -f "${NVDLA_EMU_COMPILER}" ] || ( echo "NVDLA_EMU_COMPILER does not exist"; ls -altr ${NVDLA_EMU_COMPILER}; exit 1)
@@ -21,8 +22,11 @@ nvdla_emu_bin:
 	@[ "${prototxt}" ] || (echo "nvdla prototxt not supplied e.g. prototxt=model.prototxt"; exit 1)
 	LD_LIBRARY_PATH=$(NVDLA_EMU_BASE) $(NVDLA_EMU_COMPILER) --prototxt ${prototxt} --caffemodel ${caffe}
 	mv fast-math.nvdla mnist/mnist.nvdla
-	rm output.protobug
+	rm output.protobuf
 	rm -r wisdom.dir
 
 nvdla_test: nvdla.c
-	$(CC) -g -O3  nvdla.c -o nvdla_test $(LIBS)
+	$(CC) -g -O3 nvdla.c -o nvdla_test $(LIBS) 
+
+clean:
+	rm nvdla_test

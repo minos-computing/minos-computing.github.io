@@ -17,14 +17,13 @@ send "nvdla\n"
 expect "# "
 send " pwd && ls -altr\n"
 expect "# "
-send ". ./source_me.sh\n"
-###############################
-# contents of source_me.sh
-# mount -t 9p -o trans=virtio r /mnt #mount /usr/local/nvdla from host
-# cd /mnt
-# insmod drm.ko #install dependency module
-# insmod opendla_1.ko #install precompiled opensource nvdla module
-#################################
+send "mount -t 9p -o trans=virtio r /mnt\n"
+expect "# "
+send "cd /mnt\n"
+expect "# "
+send "insmod drm.ko\n"
+expect "# "
+send "insmod opendla_1.ko\n"
 
 expect "# "
 send "pwd && ls -altr\n"
