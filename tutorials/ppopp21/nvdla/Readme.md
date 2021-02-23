@@ -1,4 +1,4 @@
-# NVDLA Emulator Tutorial
+# MCL + NVDLA Emulator Tutorial
 
 ## Welcome
 This portion of the tutorial provides a working example of performing Digit recognition using the NVDLA Virtual Platform (http://nvdla.org/vp.html) to emulate an open source NVDLA.
