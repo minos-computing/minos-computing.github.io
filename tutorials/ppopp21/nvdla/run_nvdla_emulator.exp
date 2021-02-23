@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+
+set timeout -1
+
+log_file my_log_file.log
+
+#Start the qemu image
+spawn aarch64_toplevel -c [lindex $argv 0]
+
+#login to the qemu image
+expect "nvdla login: "
+send "root\n"
+expect "Password: "
+send "nvdla\n"
+
+expect "# "
+send " pwd && ls -altr\n"
+expect "# "
+send ". ./source_me.sh\n"
+###############################
+# contents of source_me.sh
+# mount -t 9p -o trans=virtio r /mnt #mount /usr/local/nvdla from host
+# cd /mnt
+# insmod drm.ko #install dependency module
+# insmod opendla_1.ko #install precompiled opensource nvdla module
+#################################
+
+expect "# "
+send "pwd && ls -altr\n"
+expect "# "
+send "LD_LIBRARY_PATH=. ./nvdla_emu_server\n"
+expect "# "
