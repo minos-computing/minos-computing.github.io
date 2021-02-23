@@ -11,7 +11,7 @@ Within this example we will cover the following topics:
 * Launching MCL scheduler using NVDLA devices
 * Running our test application on the NVDLA emulators
 
-## TLDR
+## TL;DR
 ```
 docker pull mcl/ppopp21
 docker run --name ppopp21 -it mcl/ppopp21 /bin/bash
@@ -35,7 +35,7 @@ cd nvdla
 ```
 
 ## Create Qemu configs and Launch NVDLA emulators
-We have provided a script "run_nvdla_emulator.sh" that handles correctly setting QEMU configs, starting the images, initializing the NVDLA device driver, and starting the net attached server.
+We have provided a script 'run_nvdla_emulator.sh' that handles correctly setting QEMU configs, starting the images, initializing the NVDLA device driver, and starting the net attached server.
 Please see the tutorial slides for further details.
 This script takes an option argument specifying the number of virtual NVDLAs to launch, for the tutorial we will use 2.
 ```
@@ -60,7 +60,7 @@ The source code for our MCL NVDLA example is contained in nvdla.c (see tutorial 
 ```
 make nvdla_test
 ```
-the resultant binary is called "nvdla_test"
+the resultant binary is called 'nvdla_test'
 
 ## Launch the MCL scheduler
 Recall that MCL utilizes a scheduler process on each 'node' which manages the various devices present.
@@ -69,7 +69,7 @@ Before executing an MCL application we must ensure the scheduler is running.
 ./launch_mcl_sched.sh
 ```
 This script ensures MCL_SCHED is launched with the appropriate POCL environment variables so the the scheduler can discover the NVDLA emulators.
-e.g. POCL_DEVICES="nvdlaem" POCL_NVDLAEMU0_PARAMETERS="127.0.0.1:6000"  (the actual values will be set according to number of emulator instances launched)
+e.g. POCL_DEVICES='nvdlaem' POCL_NVDLAEMU0_PARAMETERS='127.0.0.1:6000'  (the actual values will be set according to number of emulator instances launched)
 The scheduler gets launched in the background (so no need for a new terminal)
 
 ## Execute the test
