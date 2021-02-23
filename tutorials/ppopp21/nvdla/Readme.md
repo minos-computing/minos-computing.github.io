@@ -16,7 +16,7 @@ Within this example we will cover the following topics:
 docker pull mcl/ppopp21
 docker run --name ppopp21 -it mcl/ppopp21 /bin/bash
 cd nvdla
-./run_nvdla_emulator.sh 2
+./start_nvdla_emulator.sh 2
 
 #start new terminal
 docker exec -it  ppopp21 /bin/bash
@@ -35,11 +35,11 @@ cd nvdla
 ```
 
 ## Create Qemu configs and Launch NVDLA emulators
-We have provided a script 'run_nvdla_emulator.sh' that handles correctly setting QEMU configs, starting the images, initializing the NVDLA device driver, and starting the net attached server.
+We have provided a script 'start_nvdla_emulator.sh' that handles correctly setting QEMU configs, starting the images, initializing the NVDLA device driver, and starting the net attached server.
 Please see the tutorial slides for further details.
 This script takes an option argument specifying the number of virtual NVDLAs to launch, for the tutorial we will use 2.
 ```
-./run_nvdla_emulator.sh 2
+./start_nvdla_emulator.sh 2
 ```
 We are going to leave this terminal running for now, eventually we will see some new output once inference tasks get assigned to the NVDLAs.
 ## Compile NVDLA Mnist Digit Recognition Model
