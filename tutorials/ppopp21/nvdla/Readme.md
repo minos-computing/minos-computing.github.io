@@ -13,7 +13,7 @@ Within this example we will cover the following topics:
 
 ## TL;DR
 ```
-docker pull mcl/ppopp21
+docker pull minoscomputing/ppopp21
 docker run --name ppopp21 -it mcl/ppopp21 /bin/bash
 cd nvdla
 ./start_nvdla_emulator.sh 2
