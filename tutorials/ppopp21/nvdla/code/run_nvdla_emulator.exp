@@ -1,8 +1,5 @@
 #!/usr/bin/expect -f
-
-
 set timeout -1
-
 log_file my_log_file.log
 
 #Start the qemu image

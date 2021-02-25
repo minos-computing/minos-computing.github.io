@@ -8,6 +8,7 @@ if [ -z "$num_instances" ]; then
     num_instances=1
 fi
 
+rm -r nvdla_emulator_configs
 mkdir -p nvdla_emulator_configs
 base_port=6000
 

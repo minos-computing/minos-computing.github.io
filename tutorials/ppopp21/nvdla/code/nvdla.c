@@ -74,16 +74,16 @@ int main(int argc, char** argv)
 	int                 ret = 0;
 	uint64_t            pes[MCL_DEV_DIMS] = {1,1,1};
 	unsigned int        errs, submitted;
-	uint64_t 			num_digits =2;
+	uint64_t 			num_inferences =2;
 	uint64_t 			workers = 2;
 
 	char* 				dla_bin = "mnist/mnist.nvdla";
 	char*				image_dir = "mnist/";	
 	
 
-	hdls     = (mcl_handle**) malloc(num_digits * sizeof(mcl_handle*));
+	hdls     = (mcl_handle**) malloc(num_inferences * sizeof(mcl_handle*));
 	in       = (float**) malloc(10 * sizeof(float*));
-	out      = (float**) malloc(10 * sizeof(float*));
+	out      = (float**) malloc(num_inferences * sizeof(float*));
 	
 	if(!in || !out ){
 		printf("Error allocating memory. Aborting.\n");
@@ -97,8 +97,7 @@ int main(int argc, char** argv)
 
 	for(i=0;i<10;i++){
 		in[i] = (float*) malloc(sizeof(float)*IMGSIZE);
-		out[i] = (float*) malloc(sizeof(float)* 10);
-		if(!in[i] || !out[i] ){
+		if(!in[i] ){
 			printf("Error allocating memory. Aborting.\n");
 			goto err;
 		}
@@ -107,9 +106,13 @@ int main(int argc, char** argv)
 		if (readPGMFile(img_name,in[i],IMGSIZE) == -1){
 			goto err;
 		}
-		uint64_t j;
-		for (j = 0; j<10; j++){
-			out[i][j] = 0;
+	}
+
+	for(i=0;i<num_inferences;i++){
+		out[i] = (float*) calloc(1,sizeof(float)* 10);
+		if(!out[i] ){
+			printf("Error allocating memory. Aborting.\n");
+			goto err;
 		}
 	}
 
@@ -117,47 +120,46 @@ int main(int argc, char** argv)
 	clock_gettime(CLOCK_MONOTONIC,&start);
 	submitted=0;
 	errs=0;
-	for (i=0;i<num_digits;++i){		
-		uint64_t h_idx=i;
-		hdls[h_idx] = mcl_task_create();
+	for (i=0;i<num_inferences;++i){		
+		hdls[i] = mcl_task_create();
 		
-		if(!hdls[h_idx]){
+		if(!hdls[i]){
 			printf("Error creating task %" PRIu64 ".\n",i);
 			continue;
 		}
 
-		if(mcl_task_set_kernel(hdls[h_idx], dla_bin, "DLA_MNIST", 2, "", MCL_KERNEL_BIN)){
-			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", h_idx);
+		if(mcl_task_set_kernel(hdls[i], dla_bin, "DLA_MNIST", 2, "", MCL_KERNEL_BIN)){
+			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", i);
 			continue;
 		}
 		int digit = rand()%10;
 		printf("infering %d\n",digit);
-		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
+		if(mcl_task_set_arg(hdls[i], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
 					MCL_ARG_INPUT | MCL_ARG_BUFFER)){
-			printf("Error setting argument for task %"PRIu64".\n",h_idx);
+			printf("Error setting argument for task %"PRIu64".\n",i);
 			continue;
 		}		
 
-		if(mcl_task_set_arg(hdls[h_idx], 1, (void*) out[i], sizeof(float)*10,
+		if(mcl_task_set_arg(hdls[i], 1, (void*) out[i], sizeof(float)*10,
 					MCL_ARG_OUTPUT | MCL_ARG_BUFFER)){
-			printf("Error setting output for task %"PRIu64".\n",h_idx);
+			printf("Error setting output for task %"PRIu64".\n",i);
 			continue;
 		}		
 
-		int ret = mcl_exec(hdls[h_idx], pes, NULL, MCL_TASK_NVDLA);
+		int ret = mcl_exec(hdls[i], pes, NULL, MCL_TASK_NVDLA);
 		if(ret){
-			printf("Error (%d) executing task %"PRIu64".",ret, h_idx);
+			printf("Error (%d) executing task %"PRIu64".",ret, i);
 			continue;
 		}
 		
 		submitted++;
 
-		if(mcl_wait(hdls[h_idx])){
-			printf("Request %" PRIu64 " timed out!",h_idx);
+		if(mcl_wait(hdls[i])){
+			printf("Request %" PRIu64 " timed out!",i);
 		}
 	}
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	for (i=0;i<num_digits;++i){
+	for (i=0;i<num_inferences;++i){
 		printf("Prediction for request %lu\n",i);
 		uint64_t j =0;
 		for(j=0;j<10;j++){
@@ -168,13 +170,14 @@ int main(int argc, char** argv)
 		}
 		printf("--------------------------------------\n");
 	}
-	for(i=0; i<num_digits; i++){
+	for(i=0; i<num_inferences; i++){
 		if(hdls[i]->status != MCL_REQ_COMPLETED ){
 			printf("Request %"PRIu64" status=%"PRIx64" return=%x"PRIx64"\n",
 			       i,  hdls[i]->status, hdls[i]->ret);
 			ret = 1;
 			errs++;
 		}
+		mcl_hdl_free(hdls[i]);
 	}
 	
 	if(!errs) {
@@ -183,46 +186,41 @@ int main(int argc, char** argv)
 		printf("Detected %u errors!\n",errs);
 	}
 
-	for(i=0; i<num_digits; i++){
-		mcl_hdl_free(hdls[i]);
-	}
-
 	printf("=============================================================================\n");
 
 	printf("Asynchronous Test...\n");
 	clock_gettime(CLOCK_MONOTONIC,&start);
 	errs=0;
 	submitted=0;
-	for (i=0;i<num_digits;++i){		
-		uint64_t h_idx=r*num_digits + i;
-		hdls[h_idx] = mcl_task_create();
+	for (i=0;i<num_inferences;++i){	
+		hdls[i] = mcl_task_create();
 		
-		if(!hdls[h_idx]){
+		if(!hdls[i]){
 			printf("Error creating task %" PRIu64 ".\n",i);
 			continue;
 		}
 
-		if(mcl_task_set_kernel(hdls[h_idx], dla_bin, "DLA_MNIST", 2, "", MCL_KERNEL_BIN)){
-			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", h_idx);
+		if(mcl_task_set_kernel(hdls[i], dla_bin, "DLA_MNIST", 2, "", MCL_KERNEL_BIN)){
+			printf("Error setting task kernel %s for request %"PRIu64".\n","DLA_MNIST", i);
 			continue;
 		}
 		int digit = rand()%10;
                 printf("infering %d\n",digit);
-		if(mcl_task_set_arg(hdls[h_idx], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
+		if(mcl_task_set_arg(hdls[i], 0, (void*) in[digit], sizeof(float)*IMGSIZE,
 					MCL_ARG_INPUT | MCL_ARG_BUFFER)){
-			printf("Error setting argument for task %"PRIu64".\n",h_idx);
+			printf("Error setting argument for task %"PRIu64".\n",i);
 			continue;
 		}		
 
-		if(mcl_task_set_arg(hdls[h_idx], 1, (void*) out[i], sizeof(float)*10,
+		if(mcl_task_set_arg(hdls[i], 1, (void*) out[i], sizeof(float)*10,
 					MCL_ARG_OUTPUT | MCL_ARG_BUFFER)){
-			printf("Error setting output for task %"PRIu64".\n",h_idx);
+			printf("Error setting output for task %"PRIu64".\n",i);
 			continue;
 		}		
 
-		int ret = mcl_exec(hdls[h_idx], pes, NULL, MCL_TASK_NVDLA);
+		int ret = mcl_exec(hdls[i], pes, NULL, MCL_TASK_NVDLA);
 		if(ret){
-			printf("Error (%d) executing task %"PRIu64".",ret, h_idx);
+			printf("Error (%d) executing task %"PRIu64".",ret, i);
 			continue;
 		}
 		
@@ -230,14 +228,14 @@ int main(int argc, char** argv)
 	}
 	
 
-	if(submitted == num_digits){
+	if(submitted == num_inferences){
 	  	mcl_wait_all();
 	} else{
-	  	printf("Not all requests have been successfully submitted! (%u/%"PRIu64")\n", submitted,num_digits);
+	  	printf("Not all requests have been successfully submitted! (%u/%"PRIu64")\n", submitted,num_inferences);
 	}
 	
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	for (i=0;i<num_digits;++i){
+	for (i=0;i<num_inferences;++i){
 		printf("Prediction for request %lu\n",i);
 		uint64_t j =0;
 		for(j=0;j<10;j++){
@@ -248,7 +246,7 @@ int main(int argc, char** argv)
 		}
 		printf("--------------------------------------\n");
 	}
-	for(i=0; i<num_digits; i++){
+	for(i=0; i<num_inferences; i++){
 		if(hdls[i]->status != MCL_REQ_COMPLETED ){
 			printf("Request %"PRIu64" status=%"PRIx64" retrun=%x"PRIx64"\n",
 			       i, hdls[i]->status, hdls[i]->ret);
@@ -264,12 +262,13 @@ int main(int argc, char** argv)
 	}
 	printf("=============================================================================\n");
 		
-	for(i=0; i<num_digits; i++){
+	for(i=0; i<num_inferences; i++){
 		mcl_hdl_free(hdls[i]);
+		free(out[i]);
 	}
 	for(i=0; i<10;i++){
 		free(in[i]);
-		free(out[i]);
+		
 	}
 
 	mcl_finit();
@@ -283,3 +282,33 @@ int main(int argc, char** argv)
  err:
 	exit(EXIT_FAILURE);
 }
+
+//-----------------example used in slides------------------------//
+
+/* handle command line arguments, declare variables, etc*/
+
+// char* dla_bin = "path to .nvdla binary"
+
+// float **in; //an array of digit images convert to 1-D arrays of floats
+// float **out; //an array of 10 element arrays specifying the predicted digit
+
+// /* input/output/ omitted for slides, please see full source for details */
+
+// mcl_handle** hdls =(mcl_handle**) malloc(num_inferences * size_of(mcl_handle*));
+// mcl_init(workers,0x0);
+
+// for (i=0;i<num_inferences;i++){
+// 	hdls[i]=mcl_task_create();
+// 	ret = mcl_task_set_kernel(hdls[i], dla_bin, "DLA_MNIST", 2, "", MCL_KERNEL_BIN));
+// 	ret = mcl_task_set_arg(hdls[i], 0, (void*) in[i], sizeof(float)*IMGSIZE, MCL_ARG_INPUT | MCL_ARG_BUFFER));
+// 	ret = mcl_task_set_arg(hdls[i], 1, (void*) out[i], sizeof(float)*10, MCL_ARG_OUTPUT | MCL_ARG_BUFFER));	
+// 	ret =  mcl_exec(hdls[h_idx], pes, NULL, MCL_TASK_NVDLA);
+// 	// ret = mcl_wait(hdls[i]); //uncomment for synchronous execution
+// }
+// mcl_wait_all();
+
+// //print output predictions
+
+// for(i=0;i<num_inferences; i++){
+// 	mcl_hdl_free(hdls[i]);
+// }
