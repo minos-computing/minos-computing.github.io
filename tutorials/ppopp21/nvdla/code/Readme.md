@@ -29,7 +29,7 @@ make #compiles both nvdla model and mcl test application
 
 ## Downloading and starting the Docker image
 ```
-docker pull mcl/ppopp21
+docker pull minoscomputing/ppopp21
 docker run --name ppopp21 -it mcl/ppopp21 /bin/bash
 cd nvdla
 ```
