@@ -21,7 +21,7 @@ inline void transpose(mcl_handle** hdl, float* in, float* out, size_t n)
 	*hdl = mcl_task_create();
 	assert(*hdl);
 	
-	ret = mcl_task_set_kernel(*hdl, "./transpose.cl", "transpose", 6, "", 0x0);
+	ret = mcl_task_set_kernel(*hdl, "transpose", 6);
 	assert(!ret);
 
 	ret  = mcl_task_set_arg(*hdl, 0, (void*) out, bsize, MCL_ARG_OUTPUT | MCL_ARG_BUFFER);
@@ -32,7 +32,7 @@ inline void transpose(mcl_handle** hdl, float* in, float* out, size_t n)
 	ret |= mcl_task_set_arg(*hdl, 5, NULL, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), MCL_ARG_LOCAL);
 	assert(!ret);
 
-	ret = mcl_exec(*hdl, szGlobalWorkSize, szLocalWorkSize, MCL_TASK_ANY);
+	ret = mcl_exec(*hdl, szGlobalWorkSize, szLocalWorkSize, MCL_TASK_GPU);
 	assert(!ret);
 
 }
@@ -47,7 +47,7 @@ inline void gemm(mcl_handle** hdl, float* C, float* A, float* B, size_t n)
 	*hdl = mcl_task_create();
 	assert(*hdl);
 	
-	ret = mcl_task_set_kernel(*hdl, "./matrixMul.cl", "matrixMul", 8, "", 0x0);
+	ret = mcl_task_set_kernel(*hdl, "matrixMul", 8);
 	assert(!ret);
 
 	ret  = mcl_task_set_arg(*hdl, 0, (void*) C, bsize, MCL_ARG_OUTPUT | MCL_ARG_BUFFER);
@@ -60,7 +60,7 @@ inline void gemm(mcl_handle** hdl, float* C, float* A, float* B, size_t n)
 	ret |= mcl_task_set_arg(*hdl, 7, (void*) &n, sizeof(int), MCL_ARG_INPUT | MCL_ARG_SCALAR);
 	assert(!ret);
 
-	ret = mcl_exec(*hdl, szGlobalWorkSize, szLocalWorkSize, MCL_TASK_ANY);
+	ret = mcl_exec(*hdl, szGlobalWorkSize, szLocalWorkSize, MCL_TASK_FPGA);
 	assert(!ret);
 
 }
@@ -106,6 +106,10 @@ int main(int argc, char** argv)
 	}
 
 	memset((char*) C, 0x0, size*size*sizeof(float));
+
+        mcl_prg_load("./src/transpose.cl", "", MCL_PRG_SRC);
+        mcl_prg_load("./src/matrixMul.cl", "", MCL_PRG_SRC);
+        mcl_prg_load("./build_dir.hw.xilinx_vck5000_gen3x16_xdma_1_202120_1/matrixMul.xclbin", "", MCL_PRG_BIN);
 
 	printf("-------------------------------------------\n");
 	printf("\t Launching transposes...\n");
