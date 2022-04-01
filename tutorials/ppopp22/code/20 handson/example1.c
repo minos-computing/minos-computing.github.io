@@ -26,12 +26,18 @@ int test_mcl(double* A, double* B, double* C, size_t N)
 
 	clock_gettime(CLOCK_MONOTONIC,&start);
 
+        if(mcl_prg_load("./gemmN.cl", "-DSINGLE_PRECISION", MCL_PRG_SRC)){
+                printf("Error loading program %s. Aborting.\n", "./gemmN.cl");
+                goto err;
+        }
+
 	hdl = mcl_task_create();
 	if(!hdl){
 	  printf("Error creating MCL task. Aborting.\n");
 	  goto err;
 	}
-	if(mcl_task_set_kernel(hdl, "./gemmN.cl", "gemmN", 4, "-DDOUBLE_PRECISION", 0x0)){
+
+	if(mcl_task_set_kernel(hdl, "gemmN", 4)){
 	  
 	  printf("Error setting %s kernel. Aborting.\n", "gemmN");
 	  goto err;
