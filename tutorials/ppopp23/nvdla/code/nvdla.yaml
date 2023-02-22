@@ -1,0 +1,4 @@
+device: nvdla
+model: mnist/mnist.nvdla
+kernels: 
+  - mnist
