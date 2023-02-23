@@ -13,13 +13,13 @@ Within this example we will cover the following topics:
 
 ## TL;DR
 ```
-docker pull minoscomputing/ppopp21
-docker run --name ppopp21 -it  minoscomputing/ppopp21 /bin/bash
+docker pull minoscomputing/ppopp23
+docker run --name ppopp23 -it  minoscomputing/ppopp23 /bin/bash
 cd nvdla
 ./start_nvdla_emulator.sh 2
 
 #start new terminal
-docker exec -it  ppopp21 /bin/bash
+docker exec -it  ppopp23 /bin/bash
 cd nvdla
 make #compiles both nvdla model and mcl test application
 ./launch_mcl_sched.sh
@@ -29,8 +29,8 @@ make #compiles both nvdla model and mcl test application
 
 ## Downloading and starting the Docker image
 ```
-docker pull minoscomputing/ppopp21
-docker run --name ppopp21 -it mcl/ppopp21 /bin/bash
+docker pull minoscomputing/ppopp23
+docker run --name ppopp23 -it mcl/ppopp23 /bin/bash
 cd nvdla
 ```
 
@@ -45,7 +45,7 @@ We are going to leave this terminal running for now, eventually we will see some
 ## Compile NVDLA Mnist Digit Recognition Model
 Start a new server and attach to the currently running docker image
 ```
-docker exec -it  ppopp21 /bin/bash
+docker exec -it  ppopp23 /bin/bash
 cd /nvdla
 ```
 First we compile the caffe model (located in the mnist folder) into a binary that can be used the the NVDLA emulators.
@@ -80,3 +80,6 @@ Finally we are ready to actually perform our MCL + NVDLA inference test
 Again this a wrapper script which appropriately sets the POCL environment variables to use the NVDLA emulators.
 
 The test reads in all the pgm image files in the mnist folder and then performs synchronous inferences for two digits (chosen at random)  followed by asynchronous inferences for two additional digits (also chosen at random). Sometimes the same digit is chosen more than once, rerunning the test should produce different digits. The model itself does not have perfect accuracy (for example it mis identifies the provided 0 image as a 5). Given we are using two NVDLA instances in this example, one would expect the execution time of the asynchronous test to be half that of the synchronous test (i.e. each instance is performing an instance simultaneously), but due to the docker+QEMU architecture execution appears to be serialized.
+
+## LICENCSE
+This code provided in this tutorial is licensed under the BSD License - see the [LICENSE](LICENSE) file for details.
