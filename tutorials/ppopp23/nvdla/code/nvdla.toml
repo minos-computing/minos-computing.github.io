@@ -1,0 +1,8 @@
+device = "nvdla"
+
+[model]
+[model.mnist]
+path = "mnist/mnist.nvdla"
+
+[model.mnist.kernels]
+mnist = { input = "char*", output = "char*" }
