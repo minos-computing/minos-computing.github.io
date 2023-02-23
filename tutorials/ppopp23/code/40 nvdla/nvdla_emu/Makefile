@@ -43,7 +43,7 @@ nvdla_emu_server: src/server.cpp $(SERVER_OBJS)
 
 client: src/client_test.cpp  $(CLIENT_OBJS)
 	$(CXX) $(CXX_FLAGS) -shared -o libnvdla_emu.so $(CLIENT_OBJS)
-	$(CXX) $(CXX_FLAGS) src/client_test.cpp -o client -Iinclude  -L$(CURDIR) -lnvdla_emu
+	$(CXX) $(CXX_FLAGS) src/client_test.cpp -o client -Iinclude  -L"$(CURDIR)" -lnvdla_emu
 
 install: nvdla_emu_server client
 
