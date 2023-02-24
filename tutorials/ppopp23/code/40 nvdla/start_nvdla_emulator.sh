@@ -38,7 +38,7 @@ nvdla = {
 EOT
 cd $NVDLA_EMU_BASE
 cp rootfs.ext4 rootfs_${port}.ext4
-expect ${TUTORIAL_DIR}/run_nvdla_emulator.exp ${TUTORIAL_DIR}/nvdla_emulator_configs/port${port}.lua &
+expect "${TUTORIAL_DIR}/run_nvdla_emulator.exp" "${TUTORIAL_DIR}/nvdla_emulator_configs/port${port}.lua" &
 cd ${TUTORIAL_DIR}
 done
 
