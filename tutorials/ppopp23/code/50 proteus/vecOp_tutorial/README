@@ -1,0 +1,11 @@
+# build the MCL app
+make
+
+# setup PoCL env
+export POCL_DEVICES="proteus pthread"
+export POCL_PROTEUS0_PARAMETERS=/ppopp23/proteus/vecOp_tutorial/vecop.dat
+
+# run mcl-sched
+
+# run app
+./vecOp

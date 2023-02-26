@@ -1,0 +1,14 @@
+#device info: device-name, #-of-kernels, #-of-PEs, memory limit (MB), max clk freq (GHz), data-transfer-fixed (ns), data-transfer rate (MB/s), kernel-launch-overhead (ns)
+## Do NOT include any units. Also the input is read as comma separated values,
+## do not use any commas in device name or make it too long.
+PROTEUS Simulated Device with vector ops, 2, 16, 262144, 2, 100000, 1, 1000
+#kernel name, #-of-args(n), argInfo[0], ..., argInfo[n-1] 
+## Keep kernel name short and do not include any spaces.
+## the format of argInfo[i] is as follows (separated by ':'): <input/output>:<dataType>
+## Note: only pointer types are supported.
+vec_square, 3, output:float*:POINTER, input:float*:POINTER, input:int:SCALAR
+vec_add, 4, output:float*:POINTER, input:float*:POINTER, input:float*:POINTER, input:int:SCALAR
+#kernel name, #-of-inputs(x), latency, power, input-size[0], ..., input-size[x-1]
+## Do NOT include any units.
+vec_square, 2, 333, 99, 16, 1
+vec_add, 3, 13, 40, 16, 16, 1
